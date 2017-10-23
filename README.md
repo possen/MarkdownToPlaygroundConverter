@@ -7,10 +7,10 @@ Converts to and from markdown to playground format.
 Created by Paul Ossenbruggen on 10/22/17.
 Copyright © 2017 Paul Ossenbruggen. All rights reserved.
 
-Markdown Converter:
+    Markdown Converter:
 
-Tool for convering Swift Playgrounds into or out of Markdown(.md) format so they can be displayed in Github nicely.
+    Tool for convering Swift Playgrounds into or out of Markdown(.md) format so they can be displayed in Github nicely.
 
-  -p  --toPlayground       [Markdown File Path] Converts from Markdown file to Playground.
-  -m  --toMarkdown         [Playground File Path] Converts from Playground file to Markdown.
-  -h  --help               This help
+    -p  --toPlayground       [Markdown File Path] Converts from Markdown file to Playground.
+    -m  --toMarkdown         [Playground File Path] Converts from Playground file to Markdown.
+    -h  --help               This help
