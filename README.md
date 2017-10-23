@@ -1,8 +1,7 @@
 # MarkdownToPlaygroundConverter
 Converts to and from markdown to playground format. 
 
-## A handy utilty that converts a markdown file into a playground markdown file and
- the otherway around.
+### A handy utilty that converts a markdown file into a playground markdown file and the otherway around.
 
 Created by Paul Ossenbruggen on 10/22/17.
 Copyright © 2017 Paul Ossenbruggen. All rights reserved.
