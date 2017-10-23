@@ -20,7 +20,7 @@ struct Converter {
         let lines = toMatches(text: text)
         return matchesToMarkdown(lines: lines)
     }
-
+    
     private static func toMatches(text: String) -> [String] {
         // Swift currently does not have regex built into stanard library.
         func matches(for regex: String, in text: String) -> [String] {
@@ -51,24 +51,23 @@ struct Converter {
                 return []
             } else {
                 return [line]
-            }
-            } + [["*/"]]
+            }} + [["*/"]]
         let flat = result.flatMap { $0 }
         return flat.joined(separator: "\n")
     }
     
     private static func matchesToMarkdown(lines: [String]) -> String {
-        func replace(prefix: String, line: String) -> String {
-            return String(line[prefix.endIndex...])
+        func replace(prefix: String, line: String) -> String? {
+            return line.hasPrefix(prefix) ? String(line[prefix.endIndex...]) : nil
         }
         
         let result: [[String]] = lines.map { line in
-            if line.hasPrefix("/*:") {
-                return [replace(prefix: "/*:", line: line), "```"]
-            } else if line.hasPrefix("//:") {
-                return [replace(prefix: "//:", line: line)]
-            } else if line.hasPrefix("*/") {
-                return [replace(prefix: "*/", line: line),  "``` swift"]
+            if let newLine = replace(prefix: "/*:", line: line) {
+                return [newLine, "```"]
+            } else if let newLine = replace(prefix: "//:", line: line) {
+                return [newLine.trimmingCharacters(in: .whitespaces)]
+            } else if let newLine = replace(prefix: "*/", line: line) {
+                return [newLine, "``` swift"]
             } else if line.isEmpty {
                 return []
             } else {
@@ -103,7 +102,7 @@ struct CommandTool {
             let shortFormat = pad(from: short, to: 3)
             let longFormat = pad(from: long, to: 20)
             return $0 + "\n  \(shortFormat) \(longFormat) \($1.help)"
-        } + "\n"
+            } + "\n"
     }
     
     func callMatching(operation: String, text: String) throws -> String {
@@ -119,12 +118,12 @@ struct CommandTool {
     }
 }
 
-func parseCommandLine(args: [String]) throws -> (String) {
+func parseCommandLine(args: [String]) -> (String) {
     func loadText(path: String) throws -> String {
         let url = URL(fileURLWithPath: path)
         return try String(contentsOf: url)
     }
-
+    
     let commandTool = CommandTool(
         description: """
 
@@ -154,8 +153,22 @@ func parseCommandLine(args: [String]) throws -> (String) {
     }
     let operation = args[1]
     let path = args[2]
-    return try commandTool.callMatching(operation: operation, text: path)
+    do {
+        return try commandTool.callMatching(operation: operation, text: path)
+    } catch let error {
+        var errStream = StandardErrorOutputStream()
+        print("\(error)", to: &errStream)
+    }
+    return ""
 }
 
+class StandardErrorOutputStream: TextOutputStream {
+    func write(_ string: String) {
+        let stderr = FileHandle.standardError
+        stderr.write(string.data(using: .utf8)!)
+    }
+}
+
+
 let cl = CommandLine.arguments
-print(try parseCommandLine(args: cl))
+print(parseCommandLine(args: cl))
