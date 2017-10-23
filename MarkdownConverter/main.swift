@@ -80,6 +80,9 @@ struct Converter {
 }
 
 struct CommandTool {
+    enum Errors: Error {
+        case badCommand(String)
+    }
     struct ArgHandler {
         let short: String?
         let long: String?
@@ -114,7 +117,7 @@ struct CommandTool {
                 return displayHelp()
             }
         }
-        return displayHelp()
+        throw Errors.badCommand(displayHelp())
     }
 }
 
@@ -148,27 +151,31 @@ func parseCommandLine(args: [String]) -> (String) {
                                    long: "--help",
                                    help: "This help", command: nil)
         ])
-    guard args.count == 3 else {
-        return commandTool.displayHelp()
-    }
-    let operation = args[1]
-    let path = args[2]
     do {
+        guard args.count == 3 else {
+            throw CommandTool.Errors.badCommand(commandTool.displayHelp())
+        }
+        let operation = args[1]
+        let path = args[2]
         return try commandTool.callMatching(operation: operation, text: path)
     } catch let error {
         var errStream = StandardErrorOutputStream()
         print("\(error)", to: &errStream)
+        exit(EXIT_FAILURE)
     }
     return ""
 }
 
 class StandardErrorOutputStream: TextOutputStream {
+    let stderr = FileHandle.standardError
+
     func write(_ string: String) {
-        let stderr = FileHandle.standardError
-        stderr.write(string.data(using: .utf8)!)
+        guard let data = string.data(using: .utf8) else {
+            return // encoding failure
+        }
+        stderr.write(data)
     }
 }
-
 
 let cl = CommandLine.arguments
 print(parseCommandLine(args: cl))
